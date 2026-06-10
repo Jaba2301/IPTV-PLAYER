@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELENE TV</title>
+    <title>My Online TV</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
@@ -30,7 +30,7 @@
             overflow: hidden;
         }
 
-        /* Боковая панель */
+        /* Sidebar (Left on Desktop) */
         #sidebar {
             width: 360px;
             background-color: var(--bg-sidebar);
@@ -38,6 +38,7 @@
             flex-direction: column;
             border-right: 1px solid #252538;
             z-index: 10;
+            transition: all 0.3s ease;
         }
 
         .sidebar-header {
@@ -51,7 +52,7 @@
             font-weight: 600;
         }
 
-        /* Форма добавления каналов */
+        /* Add Channel Form */
         .add-form {
             background: var(--bg-card);
             padding: 12px;
@@ -84,7 +85,7 @@
         }
         .add-form button:hover { background: var(--accent-hover); }
 
-        /* Поиск */
+        /* Search */
         .search-box {
             position: relative;
         }
@@ -105,7 +106,7 @@
             color: var(--text-dim);
         }
 
-        /* Список каналов */
+        /* Channel List */
         #channel-list {
             flex: 1;
             overflow-y: auto;
@@ -114,7 +115,7 @@
         #channel-list::-webkit-scrollbar { width: 6px; }
         #channel-list::-webkit-scrollbar-thumb { background: #2b2b3a; border-radius: 3px; }
 
-        /* Элемент канала */
+        /* Channel Item */
         .channel-item {
             display: flex;
             align-items: center;
@@ -126,7 +127,6 @@
             transition: 0.2s;
             border: 1px solid transparent;
             position: relative;
-            group: hover;
         }
         .channel-item:hover {
             background: var(--bg-card-hover);
@@ -156,7 +156,7 @@
             text-overflow: ellipsis;
         }
 
-        /* Кнопка удаления */
+        /* Delete Button */
         .delete-btn {
             background: transparent;
             border: none;
@@ -170,7 +170,7 @@
         .channel-item:hover .delete-btn { display: block; }
         .delete-btn:hover { color: var(--danger); background: rgba(255,82,82,0.1); }
 
-        /* Главный экран */
+        /* Main Content (Player View) */
         #main-content {
             flex: 1;
             display: flex;
@@ -195,24 +195,70 @@
         }
         #current-logo { width: 45px; height: 45px; object-fit: contain; margin-right: 15px; display: none; }
         #current-title { margin: 0; font-size: 18px; font-weight: 600; }
+
+        /* --- MOBILE ADAPTATION (MEDIA QUERIES) --- */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column-reverse; /* Player on top, controls at the bottom */
+            }
+
+            #sidebar {
+                width: 100%;
+                flex: 1;
+                border-right: none;
+                border-top: 1px solid #252538;
+            }
+
+            #main-content {
+                height: 35vh; /* Fixed height for video player on mobile */
+                flex: none;
+            }
+
+            .sidebar-header {
+                padding: 12px;
+            }
+
+            .add-form {
+                padding: 10px;
+                margin-bottom: 10px;
+            }
+
+            .add-form input {
+                padding: 6px 8px;
+                margin-bottom: 6px;
+                font-size: 12px;
+            }
+
+            #current-info {
+                display: none; /* Hide extra text bar on mobile to save screen space */
+            }
+
+            .delete-btn {
+                display: block; /* Always visible on mobile since there is no hover effect */
+            }
+            
+            .channel-item:hover {
+                transform: none; /* Disable shift effect on mobile touch */
+            }
+        }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
         <div class="sidebar-header">
-            <h2><i class="fa-solid fa-tv" style="color: var(--accent);"></i> ELENE TV</h2>
+            <h2><i class="fa-solid fa-tv" style="color: var(--accent);"></i> My Online TV</h2>
             
             <div class="add-form">
-                <input type="text" id="chan-name" placeholder="Название канала (например: Первый)">
-                <input type="text" id="chan-url" placeholder="Ссылка на поток (.m3u8 или .mp4)">
-                <input type="text" id="chan-logo" placeholder="Ссылка на логотип (необязательно)">
-                <button id="add-btn"><i class="fa-solid fa-plus"></i> Добавить канал</button>
+                <input type="text" id="chan-name" placeholder="Channel Name (e.g., Sky News)">
+                <input type="text" id="chan-url" placeholder="Stream URL (.m3u8 or .mp4)">
+                <input type="text" id="chan-logo" placeholder="Logo URL (optional)">
+                <button id="add-btn"><i class="fa-solid fa-plus"></i> Add Channel</button>
             </div>
 
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="search" placeholder="Поиск по добавленным...">
+                <input type="text" id="search" placeholder="Search channels...">
             </div>
         </div>
 
@@ -222,13 +268,13 @@
 
     <div id="main-content">
         <div id="player-wrapper">
-            <video id="video" controls autoplay></video>
+            <video id="video" controls autoplay playsinline></video>
         </div>
         
         <div id="current-info">
             <img id="current-logo" src="" alt="logo">
             <div>
-                <h3 id="current-title">Добавьте каналы слева и выберите один для просмотра</h3>
+                <h3 id="current-title">Add channels and select one to start watching</h3>
             </div>
         </div>
     </div>
@@ -238,7 +284,6 @@
         const channelListContainer = document.getElementById('channel-list');
         const searchInput = document.getElementById('search');
         
-        // Поля формы
         const inputName = document.getElementById('chan-name');
         const inputUrl = document.getElementById('chan-url');
         const inputLogo = document.getElementById('chan-logo');
@@ -247,7 +292,7 @@
         let allChannels = [];
         let hls = null;
 
-        // --- 1. ЗАГРУЗКА ИЗ СХРАНЕНИЯ БРАУЗЕРА ПРИ СТАРТЕ ---
+        // Load from LocalStorage
         window.addEventListener('DOMContentLoaded', () => {
             const savedChannels = localStorage.getItem('my_iptv_list');
             if (savedChannels) {
@@ -259,25 +304,23 @@
             }
         });
 
-        // Функция сохранения списка
         function saveToLocalStorage() {
             localStorage.setItem('my_iptv_list', JSON.stringify(allChannels));
         }
 
-        // --- 2. ЛОГИКА ДОБАВЛЕНИЯ КАНАЛА ---
+        // Add Channel Action
         addBtn.addEventListener('click', () => {
             const name = inputName.value.trim();
             const url = inputUrl.value.trim();
             const logo = inputLogo.value.trim();
 
             if (!name || !url) {
-                alert('Пожалуйста, заполните обязательные поля: Название и Ссылку!');
+                alert('Please fill in the required fields: Name and URL!');
                 return;
             }
 
-            // Создаем новый объект канала
             const newChannel = {
-                id: Date.now(), // Уникальный маркер для удаления
+                id: Date.now(),
                 name: name,
                 url: url,
                 logo: logo
@@ -287,23 +330,21 @@
             saveToLocalStorage();
             renderChannels(allChannels);
 
-            // Если это был первый канал, сразу запускаем его
             if (allChannels.length === 1) {
                 playChannel(newChannel, document.getElementsByClassName('channel-item')[0]);
             }
 
-            // Очищаем форму после добавления
             inputName.value = '';
             inputUrl.value = '';
             inputLogo.value = '';
         });
 
-        // --- 3. ОТРИСОВКА ИНТЕРФЕЙСА ---
+        // UI Renderer
         function renderChannels(channels) {
             channelListContainer.innerHTML = '';
 
             if (channels.length === 0) {
-                channelListContainer.innerHTML = '<div style="color:var(--text-dim); text-align:center; margin-top:20px; font-size: 14px;">Список пуст. Добавьте свой первый канал!</div>';
+                channelListContainer.innerHTML = '<div style="color:var(--text-dim); text-align:center; margin-top:20px; font-size: 14px;">The list is empty. Add your first channel!</div>';
                 return;
             }
 
@@ -311,7 +352,6 @@
                 const item = document.createElement('div');
                 item.className = 'channel-item';
                 
-                // Проверяем наличие активного статуса по URL плеера
                 if(video.src === channel.url || (hls && hls.url === channel.url)) {
                     item.classList.add('active');
                 }
@@ -323,17 +363,14 @@
                     <div class="channel-info">
                         <div class="channel-name">${channel.name}</div>
                     </div>
-                    <button class="delete-btn" title="Удалить канал"><i class="fa-solid fa-trash"></i></button>
+                    <button class="delete-btn" title="Delete Channel"><i class="fa-solid fa-trash"></i></button>
                 `;
 
-                // Клик по карточке запускает трансляцию
                 item.addEventListener('click', (e) => {
-                    // Если кликнули на корзину, выполнять запуск канала не нужно
                     if (e.target.closest('.delete-btn')) return;
                     playChannel(channel, item);
                 });
 
-                // Логика кнопки удаления
                 const delBtn = item.querySelector('.delete-btn');
                 delBtn.addEventListener('click', () => {
                     removeChannel(channel.id);
@@ -343,22 +380,21 @@
             });
         }
 
-        // --- 4. УДАЛЕНИЕ КАНАЛА ---
+        // Remove Channel Action
         function removeChannel(id) {
             allChannels = allChannels.filter(ch => ch.id !== id);
             saveToLocalStorage();
             renderChannels(allChannels);
             
-            // Если удалили все каналы, сбрасываем инфо-панель
             if(allChannels.length === 0) {
-                document.getElementById('current-title').textContent = "Добавьте каналы слева";
+                document.getElementById('current-title').textContent = "Add channels to start watching";
                 document.getElementById('current-logo').style.display = 'none';
                 if(hls) { hls.destroy(); hls = null; }
                 video.src = '';
             }
         }
 
-        // --- 5. ВОСПРОИЗВЕДЕНИЕ ---
+        // Stream Player Core
         function playChannel(channel, element) {
             document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
             if (element) element.classList.add('active');
@@ -372,7 +408,6 @@
                 currentLogo.style.display = 'none';
             }
 
-            // Запуск HLS или прямого медиафайла
             if (Hls.isSupported()) {
                 if (hls) hls.destroy();
                 hls = new Hls();
@@ -389,7 +424,7 @@
             }
         }
 
-        // --- 6. ПОИСК ---
+        // Search Filter
         searchInput.addEventListener('input', function(e) {
             const query = e.target.value.toLowerCase();
             const filtered = allChannels.filter(channel => 
