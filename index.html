@@ -226,55 +226,54 @@
     </div>
 
     <script>
-        // Твой личный CORS-прокси сервер на Cloudflare
+        // Твой CORS-прокси Cloudflare
         const PROXY_URL = "https://ancient-voice-d325.jabatukhashvili.workers.dev/?url=";
 
         // ==========================================
-        //         СПИСОК ТВОИХ КАНАЛОВ
-        // ==========================================
-       // ==========================================
-        //         ОБНОВЛЕННЫЙ СПИСОК КАНАЛОВ
+        //  СПИСОК КАНАЛОВ С УМНЫМ НАПРАВЛЕНИЕМ ПОТОКА
         // ==========================================
         const channels = [
             {
                 name: "1 Arkhi HD",
                 logo: "https://upload.wikimedia.org/wikipedia/commons/e/e3/GPB_First_Channel_logo.svg",
-                url: "https://tv.cdn.xsg.ge/gpb-1tv/index.m3u8"
+                url: "https://tv.cdn.xsg.ge/gpb-1tv/index.m3u8",
+                useProxy: true // Оставляем через прокси, раз работает
             },
             {
                 name: "1 Arxi Sport (2tv)",
                 logo: "",
-                url: "http://tv.cdn.xsg.ge/gpb-2tv/tracks-v1a1/mono.m3u8"
-            },
-            {
-                name: "Rustavi 2 HD",
-                logo: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Rustavi_2_logo.svg",
-                url: "https://tv.cdn.xsg.ge/rustavi2/index.m3u8"
+                url: "http://tv.cdn.xsg.ge/gpb-2tv/tracks-v1a1/mono.m3u8",
+                useProxy: true
             },
             {
                 name: "Marao",
                 logo: "",
-                url: "https://nexytv.net/st_marao_9086/tracks-v1a1/mono.ts.m3u8"
+                url: "https://nexytv.net/st_marao_9086/tracks-v1a1/mono.ts.m3u8",
+                useProxy: true
+            },
+            {
+                name: "Rustavi 2 HD",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Rustavi_2_logo.svg",
+                url: "https://tv.cdn.xsg.ge/rustavi2/index.m3u8",
+                useProxy: false // Включаем НАПРЯМУЮ в обход Cloudflare
             },
             {
                 name: "Pos TV",
                 logo: "",
-                url: "https://tv.cdn.xsg.ge/postv/index.m3u8"
+                url: "https://tv.cdn.xsg.ge/postv/index.m3u8",
+                useProxy: false // Включаем НАПРЯМУЮ в обход Cloudflare
             },
             {
                 name: "Mtavari Arkhi",
                 logo: "",
-                url: "https://tv.cdn.xsg.ge/mtavari/index.m3u8"
+                url: "https://tv.cdn.xsg.ge/mtavari/index.m3u8",
+                useProxy: false // Включаем НАПРЯМУЮ в обход Cloudflare
             },
             {
-                name: "Setanta Georgia 1 (Резерв)",
+                name: "Silk Universal (Резерв)",
                 logo: "",
-                url: "http://178.134.1.158:8081/setanta1/index.m3u8"
-            },
-            {
-                name: "Setanta Georgia 3 (Резерв)",
-                logo: "",
-                url: "http://178.134.1.158:8081/setanta3/index.m3u8"
+                url: "http://158.101.222.193:88/georgia_play.php?id=silk_sport4",
+                useProxy: true
             }
         ];
 
@@ -283,10 +282,8 @@
         const searchInput = document.getElementById('search');
         let hls = null;
 
-        // Функция вывода списка каналов на экран
         function renderChannels(channelsToRender) {
             channelsList.innerHTML = '';
-            
             if (channelsToRender.length === 0) {
                 channelsList.innerHTML = '<div style="color: var(--text-dim); text-align: center; margin-top: 20px;">Каналы не найдены</div>';
                 return;
@@ -312,7 +309,6 @@
             });
         }
 
-        // Главное ядро воспроизведения
         function playChannel(channel, element) {
             document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
             if (element) element.classList.add('active');
@@ -328,28 +324,25 @@
 
             video.muted = false;
 
-            // Пропускаем оригинальный URL канала через твой Cloudflare прокси
-            const proxiedUrl = PROXY_URL + encodeURIComponent(channel.url);
+            // УМНАЯ ПРОВЕРКА: Если useProxy равен true — кодируем через Cloudflare, если false — пускаем чистую ссылку
+            const finalUrl = channel.useProxy ? (PROXY_URL + encodeURIComponent(channel.url)) : channel.url;
 
-            // Запуск потока
             if (Hls.isSupported()) {
                 if (hls) hls.destroy();
                 hls = new Hls();
-                hls.loadSource(proxiedUrl);
+                hls.loadSource(finalUrl);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     video.play().catch(err => {
-                        console.log("Автозапуск заблокирован, включаем без звука...", err);
                         video.muted = true;
                         video.play();
                     });
                 });
-                
                 hls.on(Hls.Events.ERROR, function (event, data) {
                     if (data.fatal) hls.startLoad();
                 });
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = proxiedUrl;
+                video.src = finalUrl;
                 video.addEventListener('loadedmetadata', () => {
                     video.play().catch(() => {
                         video.muted = true;
@@ -359,14 +352,12 @@
             }
         }
 
-        // Поиск по каналам
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
             const filtered = channels.filter(c => c.name.toLowerCase().includes(query));
             renderChannels(filtered);
         });
 
-        // Запуск плеера при открытии страницы
         renderChannels(channels);
     </script>
 </body>
