@@ -40,7 +40,6 @@
             width: 100vw;
         }
 
-        /* Боковая панель */
         .sidebar {
             width: 320px;
             background-color: var(--bg-sidebar);
@@ -100,14 +99,8 @@
             gap: 8px;
         }
 
-        /* Стили прокрутки */
-        .channels-list::-webkit-scrollbar {
-            width: 6px;
-        }
-        .channels-list::-webkit-scrollbar-thumb {
-            background: var(--bg-card);
-            border-radius: 4px;
-        }
+        .channels-list::-webkit-scrollbar { width: 6px; }
+        .channels-list::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
 
         .channel-item {
             display: flex;
@@ -121,15 +114,8 @@
             border: 1px solid transparent;
         }
 
-        .channel-item:hover {
-            background-color: var(--bg-card-hover);
-            transform: translateX(2px);
-        }
-
-        .channel-item.active {
-            background-color: rgba(124, 77, 255, 0.15);
-            border-color: var(--accent);
-        }
+        .channel-item:hover { background-color: var(--bg-card-hover); transform: translateX(2px); }
+        .channel-item.active { background-color: rgba(124, 77, 255, 0.15); border-color: var(--accent); }
 
         .channel-logo {
             width: 45px;
@@ -140,20 +126,9 @@
             padding: 3px;
         }
 
-        .channel-info {
-            flex: 1;
-            overflow: hidden;
-        }
+        .channel-info { flex: 1; overflow: hidden; }
+        .channel-name { font-weight: 500; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .channel-name {
-            font-weight: 500;
-            font-size: 0.95rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Главный экран плеера */
         .main-content {
             flex: 1;
             display: flex;
@@ -162,24 +137,30 @@
         }
 
         .player-header {
-            height: 70px;
-            padding: 0 30px;
+            min-height: 70px;
+            padding: 10px 30px;
             display: flex;
-            align-items: center;
-            gap: 15px;
+            flex-direction: column;
+            justify-content: center;
             background-color: var(--bg-sidebar);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        #current-logo {
-            width: 35px;
-            height: 35px;
-            object-fit: contain;
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        #current-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+        #current-logo { width: 35px; height: 35px; object-fit: contain; }
+        #current-title { font-size: 1.1rem; font-weight: 600; }
+
+        #error-log {
+            color: var(--danger);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            font-weight: bold;
+            display: none;
         }
 
         .video-container {
@@ -191,12 +172,7 @@
             position: relative;
         }
 
-        video {
-            width: 100%;
-            height: 100%;
-            max-height: 100vh;
-            outline: none;
-        }
+        video { width: 100%; height: 100%; max-height: 100vh; outline: none; }
     </style>
 </head>
 <body>
@@ -210,14 +186,16 @@
                     <input type="text" id="search" placeholder="Поиск канала...">
                 </div>
             </div>
-            <div class="channels-list" id="channels-list">
-                </div>
+            <div class="channels-list" id="channels-list"></div>
         </div>
 
         <div class="main-content">
             <div class="player-header">
-                <img id="current-logo" src="" alt="" style="display: none;">
-                <span id="current-title">Выберите телеканал для просмотра</span>
+                <div class="header-info">
+                    <img id="current-logo" src="" alt="" style="display: none;">
+                    <span id="current-title">Выберите телеканал для просмотра</span>
+                </div>
+                <div id="error-log"></div>
             </div>
             <div class="video-container">
                 <video id="video" controls autoplay playsinline></video>
@@ -226,53 +204,48 @@
     </div>
 
     <script>
-        // Твой CORS-прокси Cloudflare
+        // URL твоего Cloudflare прокси
         const PROXY_URL = "https://ancient-voice-d325.jabatukhashvili.workers.dev/?url=";
 
-        // ==========================================
-        //  СПИСОК КАНАЛОВ С УМНЫМ НАПРАВЛЕНИЕМ ПОТОКА
-        // ==========================================
         const channels = [
             {
                 name: "1 Arkhi HD",
-                logo: "https://upload.wikimedia.org/wikipedia/commons/e/e3/GPB_First_Channel_logo.svg",
                 url: "https://tv.cdn.xsg.ge/gpb-1tv/index.m3u8",
-                useProxy: true // Оставляем через прокси, раз работает
+                useProxy: false
             },
             {
                 name: "1 Arxi Sport (2tv)",
-                logo: "",
                 url: "http://tv.cdn.xsg.ge/gpb-2tv/tracks-v1a1/mono.m3u8",
-                useProxy: true
+                useProxy: false
             },
             {
                 name: "Marao",
-                logo: "",
                 url: "https://nexytv.net/st_marao_9086/tracks-v1a1/mono.ts.m3u8",
-                useProxy: true
+                useProxy: false
             },
             {
                 name: "Rustavi 2 HD",
-                logo: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Rustavi_2_logo.svg",
                 url: "https://tv.cdn.xsg.ge/rustavi2/index.m3u8",
-                useProxy: false // Включаем НАПРЯМУЮ в обход Cloudflare
+                useProxy: false
             },
             {
-                name: "Pos TV",
-                logo: "",
-                url: "https://tv.cdn.xsg.ge/postv/index.m3u8",
-                useProxy: false // Включаем НАПРЯМУЮ в обход Cloudflare
+                name: "⚽ Setanta 1 (Напрямую)",
+                url: "http://178.134.1.158:8081/setanta1/index.m3u8",
+                useProxy: false
             },
             {
-                name: "Mtavari Arkhi",
-                logo: "",
-                url: "https://tv.cdn.xsg.ge/mtavari/index.m3u8",
-                useProxy: false // Включаем НАПРЯМУЮ в обход Cloudflare
+                name: "⚽ Setanta 1 (Через Прокси)",
+                url: "http://178.134.1.158:8081/setanta1/index.m3u8",
+                useProxy: true
             },
             {
-                name: "Silk Universal (Резерв)",
-                logo: "",
-                url: "http://158.101.222.193:88/georgia_play.php?id=silk_sport4",
+                name: "⚽ Setanta 3 (Напрямую)",
+                url: "http://178.134.1.158:8081/setanta3/index.m3u8",
+                useProxy: false
+            },
+            {
+                name: "⚽ Setanta 3 (Через Прокси)",
+                url: "http://178.134.1.158:8081/setanta3/index.m3u8",
                 useProxy: true
             }
         ];
@@ -280,30 +253,18 @@
         const video = document.getElementById('video');
         const channelsList = document.getElementById('channels-list');
         const searchInput = document.getElementById('search');
+        const errorLog = document.getElementById('error-log');
         let hls = null;
 
         function renderChannels(channelsToRender) {
             channelsList.innerHTML = '';
-            if (channelsToRender.length === 0) {
-                channelsList.innerHTML = '<div style="color: var(--text-dim); text-align: center; margin-top: 20px;">Каналы не найдены</div>';
-                return;
-            }
-
             channelsToRender.forEach(channel => {
                 const item = document.createElement('div');
                 item.className = 'channel-item';
-                
-                const logoHtml = channel.logo 
-                    ? `<img class="channel-logo" src="${channel.logo}" alt="">`
-                    : `<div class="channel-logo" style="display:flex; align-items:center; justify-content:center;"><i class="fas fa-play" style="color: var(--text-dim); font-size: 0.8rem;"></i></div>`;
-
                 item.innerHTML = `
-                    ${logoHtml}
-                    <div class="channel-info">
-                        <div class="channel-name">${channel.name}</div>
-                    </div>
+                    <div class="channel-logo" style="display:flex; align-items:center; justify-content:center;"><i class="fas fa-play" style="color: var(--text-dim); font-size: 0.8rem;"></i></div>
+                    <div class="channel-info"><div class="channel-name">${channel.name}</div></div>
                 `;
-
                 item.addEventListener('click', () => playChannel(channel, item));
                 channelsList.appendChild(item);
             });
@@ -314,17 +275,12 @@
             if (element) element.classList.add('active');
 
             document.getElementById('current-title').textContent = channel.name;
-            const currentLogo = document.getElementById('current-logo');
-            if (channel.logo) {
-                currentLogo.src = channel.logo;
-                currentLogo.style.display = 'block';
-            } else {
-                currentLogo.style.display = 'none';
-            }
+            errorLog.style.display = 'none';
+            errorLog.innerText = '';
 
             video.muted = false;
-
-            // УМНАЯ ПРОВЕРКА: Если useProxy равен true — кодируем через Cloudflare, если false — пускаем чистую ссылку
+            
+            // Если useProxy = true, пускаем через починенный Cloudflare. Если false - напрямую.
             const finalUrl = channel.useProxy ? (PROXY_URL + encodeURIComponent(channel.url)) : channel.url;
 
             if (Hls.isSupported()) {
@@ -332,25 +288,32 @@
                 hls = new Hls();
                 hls.loadSource(finalUrl);
                 hls.attachMedia(video);
+                
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(err => {
-                        video.muted = true;
-                        video.play();
-                    });
+                    video.play().catch(() => { video.muted = true; video.play(); });
                 });
+
                 hls.on(Hls.Events.ERROR, function (event, data) {
+                    errorLog.style.display = 'block';
+                    let details = `Ошибка: ${data.details}`;
+                    if (data.response) details += ` (Статус: ${data.response.code})`;
+                    errorLog.innerText = `⚠️ ${details}`;
+                    
                     if (data.fatal) hls.startLoad();
                 });
+
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
                 video.src = finalUrl;
-                video.addEventListener('loadedmetadata', () => {
-                    video.play().catch(() => {
-                        video.muted = true;
-                        video.play();
-                    });
-                });
+                video.addEventListener('loadedmetadata', () => { video.play(); });
             }
         }
+
+        video.onerror = function() {
+            if (video.error) {
+                errorLog.style.display = 'block';
+                errorLog.innerText = `⚠️ Ошибка встроенного плеера. Код: ${video.error.code}`;
+            }
+        };
 
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase().trim();
