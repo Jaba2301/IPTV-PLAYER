@@ -1,327 +1,355 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ka">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Online TV</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>ელენე ტვ - IPTV</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-main: #0f0f12;
-            --bg-sidebar: #16161f;
-            --bg-card: #20202b;
-            --bg-card-hover: #2b2b3a;
-            --accent: #7c4dff;
-            --accent-hover: #673ab7;
-            --danger: #ff5252;
-            --text-color: #efefef;
-            --text-dim: #8a8a9e;
+            --bg-main: #0a0b10;
+            --bg-card: #141622;
+            --accent-neon: #00ffcc;
+            --accent-glow: rgba(0, 255, 204, 0.3);
+            --text-light: #ffffff;
+            --text-dim: #70798c;
+            
+            /* Цвета для анимации */
+            --shirt-color: #ffd700; /* Желтая футболка */
+            --shorts-color: #0057b7; /* Синие шорты */
+            --skin-color: #ffdbac;
+            --hair-color: #2c1a04;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Poppins', 'Noto Sans Georgian', sans-serif;
         }
 
         body {
             background-color: var(--bg-main);
-            color: var(--text-color);
-            overflow: hidden;
-            height: 100vh;
-        }
-
-        .app-container {
+            color: var(--text-light);
             display: flex;
-            height: 100vh;
-            width: 100vw;
-        }
-
-        .sidebar {
-            width: 320px;
-            background-color: var(--bg-sidebar);
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            flex-shrink: 0;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            display: flex;
+            justify-content: center;
             align-items: center;
-            gap: 10px;
+            min-height: 100vh;
+            padding: 40px 20px;
         }
 
-        .search-box {
-            position: relative;
-        }
-
-        .search-box i {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-dim);
-        }
-
-        .search-box input {
+        .container {
+            max-width: 500px;
             width: 100%;
-            padding: 10px 10px 10px 35px;
-            background-color: var(--bg-card);
-            border: 1px solid transparent;
-            border-radius: 8px;
-            color: var(--text-color);
-            outline: none;
-            transition: all 0.3s;
+            text-align: center;
         }
 
-        .search-box input:focus {
-            border-color: var(--accent);
-            background-color: var(--bg-card-hover);
+        /* Стильное оформление названия ელენე ტვ */
+        h1 {
+            font-family: 'Noto Sans Georgian', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent-glow), 0 0 20px var(--accent-glow);
+            letter-spacing: 1px;
         }
 
-        .channels-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+        .subtitle {
+            color: var(--text-dim);
+            margin-bottom: 35px;
+            font-size: 1rem;
+            font-weight: 400;
         }
 
-        .channels-list::-webkit-scrollbar { width: 6px; }
-        .channels-list::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
-
-        .channel-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 12px;
-            background-color: var(--bg-card);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-
-        .channel-item:hover { background-color: var(--bg-card-hover); transform: translateX(2px); }
-        .channel-item.active { background-color: rgba(124, 77, 255, 0.15); border-color: var(--accent); }
-
-        .channel-logo {
-            width: 45px;
-            height: 45px;
-            border-radius: 8px;
-            object-fit: contain;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 3px;
-        }
-
-        .channel-info { flex: 1; overflow: hidden; }
-        .channel-name { font-weight: 500; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background-color: var(--bg-main);
-        }
-
-        .player-header {
-            min-height: 70px;
-            padding: 10px 30px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            background-color: var(--bg-sidebar);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .header-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        #current-logo { width: 35px; height: 35px; object-fit: contain; }
-        #current-title { font-size: 1.1rem; font-weight: 600; }
-
-        #error-log {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 5px;
-            font-weight: bold;
-            display: none;
-        }
-
-        .video-container {
-            flex: 1;
-            background-color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        /* --- АНИМАЦИЯ ЧЕКАНКИ МЯЧА (CSS ART) --- */
+        .animation-box {
             position: relative;
+            width: 200px;
+            height: 220px;
+            margin: 0 auto 40px auto;
         }
 
-        video { width: 100%; height: 100%; max-height: 100vh; outline: none; }
+        /* Футбольный мяч */
+        .ball {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: radial-gradient(circle, #fff 70%, #bbb 100%);
+            border-radius: 50%;
+            border: 2px solid #000;
+            left: 52px;
+            bottom: 45px;
+            z-index: 10;
+            animation: bounceBall 1s infinite ease-in-out;
+        }
+        /* Рисунок на мяче (имитация классических панелей) */
+        .ball::before {
+            content: '⚽';
+            position: absolute;
+            font-size: 16px;
+            top: -1px;
+            left: 2px;
+        }
+
+        /* Силуэт девушки */
+        .juggler {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 40px;
+        }
+
+        /* Волосы / Хвостик */
+        .hair {
+            position: absolute;
+            width: 26px;
+            height: 35px;
+            background-color: var(--hair-color);
+            border-radius: 50% 50% 20% 20%;
+            top: 20px;
+            left: 70px;
+        }
+        .ponytail {
+            position: absolute;
+            width: 20px;
+            height: 15px;
+            background-color: var(--hair-color);
+            border-radius: 50%;
+            top: 25px;
+            left: 92px;
+            transform: rotate(-20deg);
+        }
+
+        /* Голова */
+        .head {
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background-color: var(--skin-color);
+            border-radius: 50%;
+            top: 25px;
+            left: 72px;
+        }
+
+        /* Желтая футболка */
+        .shirt {
+            position: absolute;
+            width: 28px;
+            height: 45px;
+            background-color: var(--shirt-color);
+            border-radius: 6px 6px 0 0;
+            top: 47px;
+            left: 69px;
+            transform: rotate(-5deg);
+        }
+
+        /* Синие шорты */
+        .shorts {
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background-color: var(--shorts-color);
+            border-radius: 0 0 4px 4px;
+            top: 91px;
+            left: 67px;
+        }
+
+        /* Опорная левая нога */
+        .leg-left {
+            position: absolute;
+            width: 8px;
+            height: 60px;
+            background-color: var(--skin-color);
+            top: 110px;
+            left: 82px;
+            border-radius: 0 0 4px 4px;
+        }
+        .leg-left::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 8px;
+            background-color: #fff;
+            border: 1px solid #000;
+            bottom: -4px;
+            left: 0;
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* Правая нога, которая чеканит */
+        .leg-right {
+            position: absolute;
+            width: 8px;
+            height: 40px;
+            background-color: var(--skin-color);
+            top: 110px;
+            left: 64px;
+            transform-origin: top center;
+            animation: kickLeg 1s infinite ease-in-out;
+            border-radius: 0 0 2px 2px;
+        }
+        /* Голень и кроссовок */
+        .leg-right-shin {
+            position: absolute;
+            width: 8px;
+            height: 25px;
+            background-color: var(--skin-color);
+            bottom: -23px;
+            left: 0;
+            transform-origin: top center;
+            transform: rotate(25deg);
+        }
+        .leg-right-shin::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 8px;
+            background-color: #fff;
+            border: 1px solid #000;
+            bottom: -5px;
+            left: -4px;
+            border-radius: 4px;
+        }
+
+        /* Руки (для баланса) */
+        .arm {
+            position: absolute;
+            width: 7px;
+            height: 40px;
+            background-color: var(--skin-color);
+            top: 48px;
+            left: 62px;
+            border-radius: 4px;
+            transform: rotate(20deg);
+        }
+
+        /* КРАСИВЫЙ СПИСОК КАНАЛОВ */
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .channel-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-card);
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 16px 22px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .channel-link:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-neon);
+            box-shadow: 0 8px 20px rgba(0, 255, 204, 0.15);
+            color: var(--accent-neon);
+        }
+
+        .channel-link i.fa-external-link-alt {
+            font-size: 1rem;
+            color: var(--text-dim);
+            transition: color 0.2s;
+        }
+
+        .channel-link:hover i.fa-external-link-alt {
+            color: var(--accent-neon);
+        }
+
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .channel-info i:first-child {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* --- КЛЮЧЕВЫЕ КАДРЫ ДЛЯ СИНХРОННОЙ АНИМАЦИИ --- */
+        @keyframes bounceBall {
+            0%, 100% {
+                transform: translateY(0); /* Мяч на ноге */
+            }
+            50% {
+                transform: translateY(-75px); /* Мяч взлетает вверх */
+            }
+        }
+
+        @keyframes kickLeg {
+            0%, 100% {
+                transform: rotate(15deg); /* Нога согнута в момент удара */
+            }
+            50% {
+                transform: rotate(-10deg); /* Ноga опускается, пока мяч летит */
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-tv" style="color: var(--accent);"></i> Онлайн ТВ</h2>
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search" placeholder="Поиск канала...">
+    <div class="container">
+        <h1>ელენე ტვ</h1>
+        <div class="subtitle">ონლაინ ტელევიზია • Стримы ТВ каналов</div>
+
+        <div class="animation-box">
+            <div class="ball"></div>
+            <div class="juggler">
+                <div class="hair"></div>
+                <div class="ponytail"></div>
+                <div class="head"></div>
+                <div class="arm"></div>
+                <div class="shirt"></div>
+                <div class="shorts"></div>
+                <div class="leg-left"></div>
+                <div class="leg-right">
+                    <div class="leg-right-shin"></div>
                 </div>
             </div>
-            <div class="channels-list" id="channels-list"></div>
         </div>
 
-        <div class="main-content">
-            <div class="player-header">
-                <div class="header-info">
-                    <img id="current-logo" src="" alt="" style="display: none;">
-                    <span id="current-title">Выберите телеканал для просмотра</span>
-                </div>
-                <div id="error-log"></div>
-            </div>
-            <div class="video-container">
-                <video id="video" controls autoplay playsinline></video>
-            </div>
-        </div>
+        <div class="links-list" id="links-container"></div>
     </div>
 
     <script>
-        // URL твоего Cloudflare прокси
-        const PROXY_URL = "https://ancient-voice-d325.jabatukhashvili.workers.dev/?url=";
-
+        // Твоя база каналов
         const channels = [
-            {
-                name: "1 Arkhi HD",
-                url: "https://tv.cdn.xsg.ge/gpb-1tv/index.m3u8",
-                useProxy: false
-            },
-            {
-                name: "1 Arxi Sport (2tv)",
-                url: "http://tv.cdn.xsg.ge/gpb-2tv/tracks-v1a1/mono.m3u8",
-                useProxy: false
-            },
-            {
-                name: "Marao",
-                url: "https://nexytv.net/st_marao_9086/tracks-v1a1/mono.ts.m3u8",
-                useProxy: false
-            },
-            {
-                name: "Rustavi 2 HD",
-                url: "https://tv.cdn.xsg.ge/rustavi2/index.m3u8",
-                useProxy: false
-            },
-            {
-                name: "⚽ Setanta 1 (Напрямую)",
-                url: "http://178.134.1.158:8081/setanta1/index.m3u8",
-                useProxy: false
-            },
-            {
-                name: "⚽ Setanta 1 (Через Прокси)",
-                url: "http://178.134.1.158:8081/setanta1/index.m3u8",
-                useProxy: true
-            },
-            {
-                name: "⚽ Setanta 3 (Напрямую)",
-                url: "http://178.134.1.158:8081/setanta3/index.m3u8",
-                useProxy: false
-            },
-            {
-                name: "⚽ Setanta 3 (Через Прокси)",
-                url: "http://178.134.1.158:8081/setanta3/index.m3u8",
-                useProxy: true
-            }
+            { name: "⚽ Setanta Sports 1", url: "http://178.134.1.158:8081/setanta1/index.m3u8", icon: "fas fa-football-ball" },
+            { name: "⚽ Setanta Sports 3", url: "http://178.134.1.158:8081/setanta3/index.m3u8", icon: "fas fa-football-ball" },
+            { name: "1 Arkhi HD", url: "https://tv.cdn.xsg.ge/gpb-1tv/index.m3u8", icon: "fas fa-tv" },
+            { name: "1 Arxi Sport (2tv)", url: "http://tv.cdn.xsg.ge/gpb-2tv/tracks-v1a1/mono.m3u8", icon: "fas fa-running" },
+            { name: "Rustavi 2 HD", url: "https://tv.cdn.xsg.ge/rustavi2/index.m3u8", icon: "fas fa-tv" },
+            { name: "Marao", url: "https://nexytv.net/st_marao_9086/tracks-v1a1/mono.ts.m3u8", icon: "fas fa-smile" }
         ];
 
-        const video = document.getElementById('video');
-        const channelsList = document.getElementById('channels-list');
-        const searchInput = document.getElementById('search');
-        const errorLog = document.getElementById('error-log');
-        let hls = null;
+        const container = document.getElementById('links-container');
 
-        function renderChannels(channelsToRender) {
-            channelsList.innerHTML = '';
-            channelsToRender.forEach(channel => {
-                const item = document.createElement('div');
-                item.className = 'channel-item';
-                item.innerHTML = `
-                    <div class="channel-logo" style="display:flex; align-items:center; justify-content:center;"><i class="fas fa-play" style="color: var(--text-dim); font-size: 0.8rem;"></i></div>
-                    <div class="channel-info"><div class="channel-name">${channel.name}</div></div>
-                `;
-                item.addEventListener('click', () => playChannel(channel, item));
-                channelsList.appendChild(item);
-            });
-        }
-
-        function playChannel(channel, element) {
-            document.querySelectorAll('.channel-item').forEach(el => el.classList.remove('active'));
-            if (element) element.classList.add('active');
-
-            document.getElementById('current-title').textContent = channel.name;
-            errorLog.style.display = 'none';
-            errorLog.innerText = '';
-
-            video.muted = false;
+        channels.forEach(channel => {
+            const a = document.createElement('a');
+            a.className = 'channel-link';
+            a.href = channel.url;
+            a.target = '_blank'; // Открытие в новой вкладке
             
-            // Если useProxy = true, пускаем через починенный Cloudflare. Если false - напрямую.
-            const finalUrl = channel.useProxy ? (PROXY_URL + encodeURIComponent(channel.url)) : channel.url;
-
-            if (Hls.isSupported()) {
-                if (hls) hls.destroy();
-                hls = new Hls();
-                hls.loadSource(finalUrl);
-                hls.attachMedia(video);
-                
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(() => { video.muted = true; video.play(); });
-                });
-
-                hls.on(Hls.Events.ERROR, function (event, data) {
-                    errorLog.style.display = 'block';
-                    let details = `Ошибка: ${data.details}`;
-                    if (data.response) details += ` (Статус: ${data.response.code})`;
-                    errorLog.innerText = `⚠️ ${details}`;
-                    
-                    if (data.fatal) hls.startLoad();
-                });
-
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = finalUrl;
-                video.addEventListener('loadedmetadata', () => { video.play(); });
-            }
-        }
-
-        video.onerror = function() {
-            if (video.error) {
-                errorLog.style.display = 'block';
-                errorLog.innerText = `⚠️ Ошибка встроенного плеера. Код: ${video.error.code}`;
-            }
-        };
-
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase().trim();
-            const filtered = channels.filter(c => c.name.toLowerCase().includes(query));
-            renderChannels(filtered);
+            a.innerHTML = `
+                <div class="channel-info">
+                    <i class="${channel.icon}"></i>
+                    <span>${channel.name}</span>
+                </div>
+                <i class="fas fa-external-link-alt"></i>
+            `;
+            
+            container.appendChild(a);
         });
-
-        renderChannels(channels);
     </script>
 </body>
 </html>
