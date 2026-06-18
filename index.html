@@ -15,12 +15,10 @@
             --accent-glow: rgba(0, 255, 204, 0.3);
             --text-light: #ffffff;
             --text-dim: #70798c;
-            
-            /* Цвета для анимации */
-            --shirt-color: #ffd700; /* Желтая футболка */
-            --shorts-color: #0057b7; /* Синие шорты */
+            --shirt-color: #ffd700;
+            --shorts-color: #0057b7;
             --skin-color: #ffdbac;
-            --hair-color: #2c1a04;
+            --hair-color: #4b3621;
         }
 
         * {
@@ -46,7 +44,6 @@
             text-align: center;
         }
 
-        /* Стильное оформление названия ელენე ტვ */
         h1 {
             font-family: 'Noto Sans Georgian', sans-serif;
             font-size: 3.5rem;
@@ -64,7 +61,6 @@
             font-weight: 400;
         }
 
-        /* --- АНИМАЦИЯ ЧЕКАНКИ МЯЧА (CSS ART) --- */
         .animation-box {
             position: relative;
             width: 200px;
@@ -72,7 +68,6 @@
             margin: 0 auto 40px auto;
         }
 
-        /* Футбольный мяч */
         .ball {
             position: absolute;
             width: 24px;
@@ -85,7 +80,7 @@
             z-index: 10;
             animation: bounceBall 1s infinite ease-in-out;
         }
-        /* Рисунок на мяче (имитация классических панелей) */
+
         .ball::before {
             content: '⚽';
             position: absolute;
@@ -94,7 +89,6 @@
             left: 2px;
         }
 
-        /* Силуэт девушки */
         .juggler {
             position: absolute;
             width: 100%;
@@ -102,131 +96,164 @@
             left: 40px;
         }
 
-        /* Волосы / Хвостик */
         .hair {
             position: absolute;
-            width: 26px;
-            height: 35px;
+            width: 30px;
+            height: 40px;
             background-color: var(--hair-color);
             border-radius: 50% 50% 20% 20%;
-            top: 20px;
-            left: 70px;
+            top: 18px;
+            left: 68px;
         }
+
         .ponytail {
             position: absolute;
-            width: 20px;
-            height: 15px;
+            width: 22px;
+            height: 18px;
             background-color: var(--hair-color);
             border-radius: 50%;
-            top: 25px;
-            left: 92px;
+            top: 22px;
+            left: 94px;
             transform: rotate(-20deg);
         }
 
-        /* Голова */
         .head {
             position: absolute;
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 26px;
             background-color: var(--skin-color);
             border-radius: 50%;
-            top: 25px;
-            left: 72px;
+            top: 23px;
+            left: 71px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Желтая футболка */
+        /* Добавляем лицо: глаза и улыбку */
+        .face {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .eye {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: #333;
+            border-radius: 50%;
+            top: 10px;
+        }
+
+        .eye.left {
+            left: 6px;
+        }
+
+        .eye.right {
+            right: 6px;
+        }
+
+        .smile {
+            position: absolute;
+            width: 10px;
+            height: 5px;
+            border: 2px solid #333;
+            border-radius: 0 0 10px 10px;
+            border-top: none;
+            bottom: 6px;
+            left: 7px;
+        }
+
         .shirt {
             position: absolute;
-            width: 28px;
-            height: 45px;
+            width: 30px;
+            height: 48px;
             background-color: var(--shirt-color);
-            border-radius: 6px 6px 0 0;
+            border-radius: 8px 8px 0 0;
             top: 47px;
-            left: 69px;
+            left: 68px;
             transform: rotate(-5deg);
         }
 
-        /* Синие шорты */
         .shorts {
             position: absolute;
-            width: 30px;
-            height: 20px;
+            width: 32px;
+            height: 22px;
             background-color: var(--shorts-color);
-            border-radius: 0 0 4px 4px;
-            top: 91px;
-            left: 67px;
+            border-radius: 0 0 5px 5px;
+            top: 93px;
+            left: 66px;
         }
 
-        /* Опорная левая нога */
         .leg-left {
             position: absolute;
-            width: 8px;
-            height: 60px;
+            width: 9px;
+            height: 62px;
             background-color: var(--skin-color);
-            top: 110px;
+            top: 113px;
             left: 82px;
-            border-radius: 0 0 4px 4px;
+            border-radius: 0 0 5px 5px;
         }
+
         .leg-left::after {
             content: '';
             position: absolute;
-            width: 12px;
-            height: 8px;
+            width: 14px;
+            height: 9px;
             background-color: #fff;
             border: 1px solid #000;
-            bottom: -4px;
-            left: 0;
-            border-radius: 4px 4px 0 0;
+            bottom: -5px;
+            left: -1px;
+            border-radius: 5px 5px 0 0;
         }
 
-        /* Правая нога, которая чеканит */
         .leg-right {
             position: absolute;
-            width: 8px;
-            height: 40px;
+            width: 9px;
+            height: 42px;
             background-color: var(--skin-color);
-            top: 110px;
+            top: 113px;
             left: 64px;
             transform-origin: top center;
             animation: kickLeg 1s infinite ease-in-out;
-            border-radius: 0 0 2px 2px;
+            border-radius: 0 0 3px 3px;
         }
-        /* Голень и кроссовок */
+
         .leg-right-shin {
             position: absolute;
-            width: 8px;
-            height: 25px;
+            width: 9px;
+            height: 27px;
             background-color: var(--skin-color);
-            bottom: -23px;
+            bottom: -25px;
             left: 0;
             transform-origin: top center;
             transform: rotate(25deg);
         }
+
         .leg-right-shin::after {
             content: '';
             position: absolute;
-            width: 14px;
-            height: 8px;
+            width: 16px;
+            height: 9px;
             background-color: #fff;
             border: 1px solid #000;
-            bottom: -5px;
-            left: -4px;
-            border-radius: 4px;
+            bottom: -6px;
+            left: -5px;
+            border-radius: 5px;
         }
 
-        /* Руки (для баланса) */
         .arm {
             position: absolute;
-            width: 7px;
-            height: 40px;
+            width: 8px;
+            height: 42px;
             background-color: var(--skin-color);
             top: 48px;
-            left: 62px;
-            border-radius: 4px;
+            left: 61px;
+            border-radius: 5px;
             transform: rotate(20deg);
         }
 
-        /* КРАСИВЫЙ СПИСОК КАНАЛОВ */
         .links-list {
             display: flex;
             flex-direction: column;
@@ -276,23 +303,14 @@
             text-align: center;
         }
 
-        /* --- КЛЮЧЕВЫЕ КАДРЫ ДЛЯ СИНХРОННОЙ АНИМАЦИИ --- */
         @keyframes bounceBall {
-            0%, 100% {
-                transform: translateY(0); /* Мяч на ноге */
-            }
-            50% {
-                transform: translateY(-75px); /* Мяч взлетает вверх */
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-75px); }
         }
 
         @keyframes kickLeg {
-            0%, 100% {
-                transform: rotate(15deg); /* Нога согнута в момент удара */
-            }
-            50% {
-                transform: rotate(-10deg); /* Ноga опускается, пока мяч летит */
-            }
+            0%, 100% { transform: rotate(15deg); }
+            50% { transform: rotate(-10deg); }
         }
     </style>
 </head>
@@ -307,7 +325,13 @@
             <div class="juggler">
                 <div class="hair"></div>
                 <div class="ponytail"></div>
-                <div class="head"></div>
+                <div class="head">
+                    <div class="face">
+                        <div class="eye left"></div>
+                        <div class="eye right"></div>
+                        <div class="smile"></div>
+                    </div>
+                </div>
                 <div class="arm"></div>
                 <div class="shirt"></div>
                 <div class="shorts"></div>
@@ -322,7 +346,6 @@
     </div>
 
     <script>
-        // Твоя база каналов
         const channels = [
             { name: "⚽ Setanta Sports 1", url: "http://178.134.1.158:8081/setanta1/index.m3u8", icon: "fas fa-football-ball" },
             { name: "⚽ Setanta Sports 3", url: "http://178.134.1.158:8081/setanta3/index.m3u8", icon: "fas fa-football-ball" },
@@ -338,7 +361,7 @@
             const a = document.createElement('a');
             a.className = 'channel-link';
             a.href = channel.url;
-            a.target = '_blank'; // Открытие в новой вкладке
+            a.target = '_blank';
             
             a.innerHTML = `
                 <div class="channel-info">
